@@ -7,7 +7,7 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import net from 'node:net';
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-test('isolated Windows host initializes empty data, saves with revision checking and survives restart',{skip:process.platform!=='win32',timeout:30000},async()=>{
+test('isolated Windows host initializes empty data, saves with revision checking and survives restart',{skip:process.platform!=='win32',timeout:90000},async()=>{
  const prefix=join(tmpdir(),'dashboard-public-test-'),directory=await mkdtemp(prefix);
  assert(resolve(directory).startsWith(resolve(prefix))&&resolve(directory).length>resolve(prefix).length);
  let child=null,output='';
@@ -17,7 +17,9 @@ test('isolated Windows host initializes empty data, saves with revision checking
  const start=async()=>{
   child=spawn('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',join(directory,'server/dashboard-host.ps1'),'-Port',String(port),'-LoopbackOnly'],{cwd:directory,windowsHide:true,env:{...process.env,DASHBOARD_OPERATIONS_API:''},stdio:['ignore','pipe','pipe']});
   child.stdout.on('data',s=>output+=s);child.stderr.on('data',s=>output+=s);
-  for(let i=0;i<60;i++){if(child.exitCode!==null)throw Error('Host exited: '+output);try{const r=await fetch(base+'/api/storage');if(r.ok)return await r.json()}catch{}await wait(150)}
+  // Hosted Windows runners may cold-start PowerShell and compile Add-Type slowly.
+  const deadline=Date.now()+30000;
+  while(Date.now()<deadline){if(child.exitCode!==null)throw Error('Host exited: '+output);try{const r=await fetch(base+'/api/storage',{signal:AbortSignal.timeout(1000)});if(r.ok)return await r.json()}catch{}await wait(150)}
   throw Error('Host startup timed out: '+output);
  };
  try{

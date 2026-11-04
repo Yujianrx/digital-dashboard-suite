@@ -63,7 +63,9 @@ Files: scripts/build-static.mjs, scripts/build-operations.mjs, Dockerfile, compo
 - [x] Add artifact checks for empty template, absence of server/private files and relative assets.
 - [x] Build static artifact from publish resources, add server and static deployment instructions and CI matrix.
 - [x] Run all tests, type check, both builds, public scan and browser smoke checks.
-- [ ] Review diff, commit, push to main, update GitHub name/description/topics and verify remote CI.
+- [x] Review diff, commit, push to main, and update GitHub name/description/topics.
+
+Release verification: inspect the current main commit in [GitHub Actions](https://github.com/Yujianrx/digital-dashboard-suite/actions/workflows/ci.yml).
 
 ## Validation notes
 

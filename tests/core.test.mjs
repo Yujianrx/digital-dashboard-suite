@@ -39,3 +39,6 @@ test('business effects use coupon, product and recharge units with a cross-month
 test('new activity entry and computed-only import contract are retained',async()=>{
  const ui=await readFile(new URL('../app/offline-package/member/platform-ui.js',import.meta.url),'utf8');assert(ui.includes('aria-label="新建小程序活动"'));assert(ui.includes("op==='rename-activity'"));const imports=await readFile(new URL('../app/offline-package/member/import-center.js',import.meta.url),'utf8');assert(imports.includes("const derived=kind==='core'"));
 });
+test('Windows PowerShell scripts use an explicit UTF-8 signature for every locale',async()=>{
+ for(const name of ['dashboard-host.ps1','operations-proxy.ps1']){const bytes=await readFile(new URL('../server/'+name,import.meta.url));assert.equal(bytes.subarray(0,3).toString('hex'),'efbbbf',name+' must retain its UTF-8 BOM for Windows PowerShell 5.1')}
+});

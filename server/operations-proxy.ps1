@@ -1,4 +1,4 @@
-# No production service is contacted unless an operator explicitly configures a local API.
+﻿# No production service is contacted unless an operator explicitly configures a local API.
 function Write-OperationsResponse($Context) {
   if ($Context.Request.HttpMethod -ne 'GET') { Write-JsonResponse $Context 405 @{error='Only readonly GET is supported'}; return }
   $Path = $Context.Request.Url.AbsolutePath

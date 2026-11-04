@@ -1,0 +1,15 @@
+services:
+  dashboard:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      DASHBOARD_MODE: web
+      DASHBOARD_PUBLIC_ORIGIN: ${DASHBOARD_PUBLIC_ORIGIN:?Set DASHBOARD_PUBLIC_ORIGIN in .env}
+      DASHBOARD_ADMIN_USER: ${DASHBOARD_ADMIN_USER:-admin}
+      DASHBOARD_ADMIN_PASSWORD: ${DASHBOARD_ADMIN_PASSWORD:?Set DASHBOARD_ADMIN_PASSWORD in .env}
+    volumes:
+      - dashboard-state:/var/lib/dashboard
+volumes:
+  dashboard-state:

@@ -32,9 +32,9 @@ Files: server/config.mjs, server/storage.mjs, server/host.mjs, tests/node-host.t
 
 Interface: createHost(config) returns an HTTP server; Storage.snapshot() returns {revision,updatedAt,values}; Storage.apply(body) validates and commits atomically.
 
-- [ ] Add failing integration tests for empty initialization, restart, clear, batch rollback and revision conflicts.
-- [ ] Implement configuration, SQLite persistence, backups and static file routing; preserve existing API payloads.
-- [ ] Run node --test tests/node-host.test.mjs; commit passing implementation.
+- [x] Add failing integration tests for empty initialization, restart, clear, batch rollback and revision conflicts.
+- [x] Implement configuration, SQLite persistence, backups and static file routing; preserve existing API payloads.
+- [x] Run node --test tests/node-host.test.mjs; commit passing implementation.
 
 ### Task 2: Website authentication
 
@@ -42,9 +42,9 @@ Files: server/auth.mjs, app/offline-package/login.html, tests/auth.test.mjs.
 
 Interface: POST /api/login establishes an HttpOnly session; POST /api/logout revokes it. Website routes require a session; writes require same origin.
 
-- [ ] Add failing tests for login failures, valid cookies, logout, request limits and foreign origins.
-- [ ] Implement session handling, rate limits and login UI with return-path validation.
-- [ ] Run node --test tests/auth.test.mjs; commit passing implementation.
+- [x] Add failing tests for login failures, valid cookies, logout, request limits and foreign origins.
+- [x] Implement session handling, rate limits and login UI with return-path validation.
+- [x] Run node --test tests/auth.test.mjs; commit passing implementation.
 
 ### Task 3: Explicit client runtime and static persistence
 
@@ -52,15 +52,19 @@ Files: app/offline-package/runtime-config.js, shared-storage-client.js and membe
 
 Interface: window.DashboardRuntime specifies mode, storage and basePath; existing __sharedStorageReady/__flushSharedStorage interfaces remain available.
 
-- [ ] Add tests for path-isolated storage, seed-once behavior, quota errors and same-origin iframe cooperation.
-- [ ] Implement browser adapter, backup controls, mode labels, session-expiry handling and deployment-relative URLs.
-- [ ] Verify client behavior and original business tests; commit passing implementation.
+- [x] Add tests for path-isolated storage, seed-once behavior, quota errors and same-origin iframe cooperation.
+- [x] Implement browser adapter, backup controls, mode labels, session-expiry handling and deployment-relative URLs.
+- [x] Verify client behavior and original business tests; commit passing implementation.
 
 ### Task 4: Builds, deployment and repository identity
 
 Files: scripts/build-static.mjs, scripts/build-operations.mjs, Dockerfile, compose.yaml, deploy/Caddyfile, .dockerignore, .env.example, README.md, docs/DEPLOYMENT.md, CI workflows and package metadata.
 
-- [ ] Add artifact checks for empty template, absence of server/private files and relative assets.
-- [ ] Build static artifact from publish resources, add server and static deployment instructions and CI matrix.
-- [ ] Run all tests, type check, both builds, public scan and browser smoke checks.
+- [x] Add artifact checks for empty template, absence of server/private files and relative assets.
+- [x] Build static artifact from publish resources, add server and static deployment instructions and CI matrix.
+- [x] Run all tests, type check, both builds, public scan and browser smoke checks.
 - [ ] Review diff, commit, push to main, update GitHub name/description/topics and verify remote CI.
+
+## Validation notes
+
+Static browser persistence uses IndexedDB transactions with per-key conflict checks and pending-write retry. Real-browser checks covered nested paths, plan save/reload, concurrent tabs, quota failure/retry, JSON import persistence, and website login/logout. Publication uses the Git source list and Vite manifest to exclude ignored private files.

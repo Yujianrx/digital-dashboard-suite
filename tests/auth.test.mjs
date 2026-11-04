@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {once} from 'node:events';
+import {createHost} from '../server/host.mjs';
+import {readConfig} from '../server/config.mjs';
+
+test('website requires login, protects writes and revokes sessions at logout',async t=>{
+  const dir=await mkdtemp(join(tmpdir(),'dashboard-auth-test-'));
+  const origin='http://localhost:8765';
+  const config={...readConfig({DASHBOARD_MODE:'web',DASHBOARD_PUBLIC_ORIGIN:origin,DASHBOARD_ADMIN_PASSWORD:'synthetic-test-password'}),dataDir:join(dir,'data'),backupDir:join(dir,'backups')};
+  const server=createHost(config);server.listen(0,'127.0.0.1');await once(server,'listening');
+  t.after(async()=>{server.closeAllConnections();await new Promise(r=>server.close(r));await rm(dir,{recursive:true,force:true});});
+  const base='http://127.0.0.1:'+server.address().port;
+  const post=(path,body,cookie='',requestOrigin=origin)=>fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json',Origin:requestOrigin,Cookie:cookie},body:JSON.stringify(body)});
+  assert.equal((await fetch(base+'/api/storage')).status,401);
+  const redirect=await fetch(base+'/member/',{redirect:'manual'});assert.equal(redirect.status,302);assert.match(redirect.headers.get('location'),/^\/login.html\?next=/);
+  assert.equal((await post('/api/login',{username:'admin',password:'incorrect'})).status,401);
+  const login=await post('/api/login',{username:'admin',password:'synthetic-test-password'});
+  assert.equal(login.status,200);
+  const cookie=login.headers.get('set-cookie');assert.match(cookie,/HttpOnly/);assert.match(cookie,/SameSite=Strict/);
+  assert.equal((await fetch(base+'/api/storage',{headers:{Cookie:cookie}})).status,200);
+  const operation={action:'set',key:'synthetic',value:'test',baseRevision:1};
+  assert.equal((await post('/api/storage',operation,cookie,'https://foreign.invalid')).status,403);
+  assert.equal((await post('/api/storage',operation,cookie)).status,200);
+  assert.equal((await post('/api/logout',{},cookie)).status,200);
+  assert.equal((await fetch(base+'/api/storage',{headers:{Cookie:cookie}})).status,401);
+  assert.equal((await post('/api/login',{password:'x'.repeat(10000)})).status,413);
+  for(let i=0;i<10;i++)assert.equal((await post('/api/login',{username:'admin',password:'wrong'})).status,401);
+  assert.equal((await post('/api/login',{username:'admin',password:'wrong'})).status,429);
+});

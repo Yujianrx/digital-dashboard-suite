@@ -1,0 +1,6 @@
+# Replace with your domain; point its DNS to your server.
+# Run Caddy on the same host as the loopback-bound dashboard service.
+dashboard.example.com {
+    reverse_proxy 127.0.0.1:8765
+    encode zstd gzip
+}

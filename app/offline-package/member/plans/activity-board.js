@@ -156,7 +156,7 @@ export class ActivityBoard extends HTMLElement {
   }
   async saveEditor() {
     if(this.saving)return;this.setEditorSaving(true);
-    try {const result=await this.savePlan(this.editorDraft);this.closeEditor(true);this.replaceSaved(result);this.notify('活动已保存到主机');}
+    try {const result=await this.savePlan(this.editorDraft);this.closeEditor(true);this.replaceSaved(result);this.notify(window.__getSharedStorageStatus?.().message||'活动已保存');}
     catch(error){this.setEditorSaving(false);this.showEditorError(error.message);}
   }
   removeBeforeUnload() {if(this.beforeUnload){window.removeEventListener('beforeunload',this.beforeUnload);this.beforeUnload=null;}}

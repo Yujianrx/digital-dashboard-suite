@@ -32,6 +32,9 @@ import {
 } from "@/restaurant/model.mjs";
 import { trendOption } from "@/restaurant/chart";
 import { refreshSeconds } from "@/restaurant/config";
+const runtime=(window as Window & {DashboardRuntime?: {storage:string}}).DashboardRuntime;
+const browserMode=runtime?.storage==='browser';
+const snapshotKey='operations_dataset_v1';
 const filters = reactive<Filters>(defaults()),
   draft = reactive({ start: filters.start, end: filters.end }),
   data = shallowRef<Dataset | null>(null),
@@ -279,6 +282,10 @@ async function importJson(event: Event) {
   try {
     if (file.size > 25 * 1024 * 1024) throw Error("JSON 文件请控制在25MB内");
     const next = validateDataset(JSON.parse(await file.text()));
+    if(browserMode){
+      localStorage.setItem(snapshotKey,JSON.stringify(next));
+      await (window as Window & {__flushSharedStorage?:()=>Promise<unknown>}).__flushSharedStorage?.();
+    }
     imported.value = next;
     source.value = "import";
     resetScope();
@@ -316,6 +323,10 @@ watch(
   },
 );
 onMounted(() => {
+  if(browserMode) {
+    try {const saved=localStorage.getItem(snapshotKey);if(saved){imported.value=validateDataset(JSON.parse(saved));source.value='import';}}
+    catch(e){error.value='浏览器快照读取失败：'+(e as Error).message;return;}
+  }
   load();
   updateClock();
   timer = setInterval(updateClock, 1000);
@@ -357,7 +368,7 @@ onBeforeUnmount(() => {
           ><i class="dot"></i>{{ data ? signalName : "等待数据源" }}</span
         ><span class="head-line"></span
         ><small data-testid="snapshot-status">{{
-          source === "clickhouse" ? snapshotNotice : "经营分析 / 管理汇报"
+          browserMode ? "静态演示 · 仅保存在此浏览器" : source === "clickhouse" ? snapshotNotice : "经营分析 / 管理汇报"
         }}</small>
       </div>
       <div class="head-tools">
@@ -448,8 +459,8 @@ onBeforeUnmount(() => {
         >
           <option value="demo">空数据模板</option>
 
-          <option value="clickhouse">真实数据 · 每日快照</option>
-          <option value="static">静态真实 JSON</option>
+          <option v-if="!browserMode" value="clickhouse">真实数据 · 每日快照</option>
+          <option v-if="!browserMode" value="static">静态真实 JSON</option>
           <option v-if="imported" value="import">已导入 JSON</option></select
         ><label class="upload-button" title="导入契约JSON"
           >导入<input

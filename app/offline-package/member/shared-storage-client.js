@@ -1,12 +1,21 @@
 (function () {
   "use strict";
 
-  var isSharedMode = location.protocol === "http:" || location.protocol === "https:";
-  var nativeStorage = window.localStorage;
+  var runtime = window.DashboardRuntime || { mode: 'local', storage: 'server', basePath: '/' };
+  var isSharedMode = runtime.storage !== 'browser';
+  var browserStore = null;
+  var savedMessage = isSharedMode ? (runtime.mode === 'web' ? '已保存到网站服务器' : '已保存到本机服务') : '已保存到此浏览器';
+
   // One coordinator per same-origin dashboard tab, shared with the activity iframe.
   var parentHub = null;
   try { if (window.parent !== window && window.parent.location.origin === location.origin) parentHub = window.parent.__dashboardSharedHub; } catch (_) {}
-  if (isSharedMode && parentHub) {
+  if (parentHub && parentHub.basePath === runtime.basePath) {
+    if (!isSharedMode) {
+      parentHub.attach(window);
+      window.__dashboardStorageMode = 'local';
+      window.__sharedStorageReady = parentHub.ready;
+      return;
+    }
     window.__dashboardStorageMode = "shared";
     window.__sharedStorageReady = parentHub.ready.then(function () { parentHub.attach(window); return { mode: "shared" }; });
     return;
@@ -23,7 +32,7 @@
   var checking = false;
   var blocked = null;
   var clients = new Set();
-  var status = { state: "saved", message: "已保存到主机" };
+  var status = { state: "saved", message: savedMessage };
   var clientId = "client-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
 
   function allValues(storage) {
@@ -53,9 +62,11 @@
   }
 
   function requestJson(url, options) {
+    url = runtime.basePath + url.replace(/^\//, '');
     return fetch(url, Object.assign({ cache: "no-store" }, options || {})).then(function (response) {
       return response.text().then(function (text) {
-        var body = text ? JSON.parse(text) : {};
+        var body;
+        try { body = text ? JSON.parse(text) : {}; } catch (_) { throw new Error('服务未返回有效数据，请检查部署方式和接口地址'); }
         if (!response.ok) {
           var error = new Error(body.message || ("请求失败：" + response.status));
           error.status = response.status;
@@ -70,7 +81,14 @@
   function showFatal(message) {
     var panel = document.createElement("div");
     panel.style.cssText = "position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#f7f2ef;font-family:system-ui,-apple-system,'Microsoft YaHei',sans-serif;padding:24px";
-    panel.innerHTML = '<div style="max-width:560px;background:white;border:1px solid #ead8d0;border-radius:20px;padding:28px;box-shadow:0 20px 70px rgba(86,40,30,.16)"><h2 style="margin:0 0 12px;color:#3d2924">无法连接局域网数据主机</h2><p style="margin:0;color:#765f57;line-height:1.8">' + message + '</p><button onclick="location.reload()" style="margin-top:18px;border:0;border-radius:10px;background:#d92d29;color:white;padding:10px 18px;font-weight:700;cursor:pointer">重新连接</button></div>';
+    panel.innerHTML = '<div style="max-width:560px;background:white;border:1px solid #ead8d0;border-radius:20px;padding:28px;box-shadow:0 20px 70px rgba(86,40,30,.16)"><h2 style="margin:0 0 12px;color:#3d2924">暂时无法连接数据服务</h2><p style="margin:0;color:#765f57;line-height:1.8">' + String(message).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}) + '</p><button onclick="location.reload()" style="margin-top:18px;border:0;border-radius:10px;background:#d92d29;color:white;padding:10px 18px;font-weight:700;cursor:pointer">重新连接</button></div>';
+    if (runtime.mode === 'web') {
+      var link = document.createElement('a');
+      link.textContent = '重新登录';
+      link.href = runtime.basePath + 'login.html?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
+      link.style.cssText = 'display:block;margin-top:16px';
+      panel.firstElementChild.appendChild(link);
+    }
     document.documentElement.appendChild(panel);
   }
 
@@ -86,6 +104,8 @@
     eachClient(function (target) { target.dispatchEvent(new target.CustomEvent("dashboard-save-status", { detail: status })); });
     var label = document.getElementById("sharedSaveMessage");
     if (label) label.textContent = message;
+    var hostLabel = document.getElementById('hostSaveStatus');
+    if (hostLabel) { hostLabel.textContent = message; hostLabel.dataset.state = next; }
     var notice = document.getElementById("sharedSaveNotice");
     if (notice) notice.hidden = next !== "error" && next !== "conflict";
   }
@@ -169,7 +189,7 @@
         else if (op.action === "remove") confirmed.delete(op.key);
         else confirmed.set(op.key, op.value);
       });
-      setStatus(pendingMutations.size || clearPending ? "pending" : "saved", pendingMutations.size || clearPending ? "待保存…" : "已保存到主机");
+      setStatus(pendingMutations.size || clearPending ? "pending" : "saved", pendingMutations.size || clearPending ? "待保存…" : savedMessage);
     }).catch(function (error) {
       // Retain failed writes, with later edits taking priority over earlier values.
       if (!clearPending) operations.forEach(function (op) {
@@ -240,7 +260,7 @@
       var parsed = JSON.parse(text);
       var values = parsed && parsed.values ? parsed.values : parsed;
       if (!values || Array.isArray(values) || typeof values !== "object") throw new Error("备份文件格式不正确");
-      var normalized = {};
+      var normalized = Object.create(null);
       Object.keys(values).forEach(function (key) {
         if (values[key] !== null && values[key] !== undefined) normalized[String(key)] = String(values[key]);
       });
@@ -277,9 +297,36 @@
     document.body.appendChild(button);
 
     if (!isSharedMode) {
-      button.addEventListener("click", function () {
-        var prefix = location.pathname.indexOf("/activity-data/") >= 0 ? "会员运营活动效果看板本机数据" : "连锁门店看板本机数据";
-        downloadJson(allValues(nativeStorage), prefix);
+      button.textContent = '浏览器数据 · 备份与导入';
+      var browserNotice=document.createElement('div');browserNotice.id='sharedSaveNotice';browserNotice.hidden=true;
+      browserNotice.style.cssText='position:fixed;right:18px;bottom:70px;z-index:2147483001;max-width:450px;padding:16px;border:1px solid #fdba74;border-radius:12px;background:#fff7ed;color:#7c3910;font:13px/1.7 system-ui';
+      browserNotice.innerHTML='<div id="sharedSaveMessage"></div><button data-browser="retry">重试保存</button> <button data-browser="export">导出待保存数据</button> <button data-browser="load">加载最新数据</button>';
+      browserNotice.addEventListener('click',function(event){
+        var action=event.target.dataset.browser;
+        if(action==='export')downloadJson(browserStore.exportPending(),'数字看板待保存数据');
+        if(action==='retry')browserStore.flush().catch(function(){});
+        if(action==='load'&&confirm('加载最新数据会放弃本页未保存的修改。请确认已导出备份，是否继续？'))browserStore.discard().then(function(){location.reload();}).catch(function(error){alert(error.message);});
+      });
+      document.body.appendChild(browserNotice);setStatus(status.state,status.message);
+      var localPanel = document.createElement('div');
+      localPanel.className = 'shared-storage-panel'; localPanel.hidden = true;
+      localPanel.innerHTML = '<h3>仅保存在此浏览器</h3><p>静态演示模式，数据不会上传或跨设备同步。清除网站数据会删除记录，请定期导出备份。</p><button data-local="export">导出数据备份</button><button data-local="import">导入 JSON 备份</button><button data-local="retry">重试保存</button><button data-local="close">关闭</button><input type="file" accept=".json,application/json">';
+      document.body.appendChild(localPanel);
+      button.addEventListener('click', function(){localPanel.hidden=!localPanel.hidden;});
+      var localInput=localPanel.querySelector('input');
+      localPanel.addEventListener('click',function(event){
+        var action=event.target.dataset.local;
+        if(action==='export')downloadJson(browserStore.exportPending(),'数字看板浏览器数据');
+        if(action==='import')localInput.click();
+        if(action==='retry')browserStore.flush().catch(function(error){alert(error.message);});
+        if(action==='close')localPanel.hidden=true;
+      });
+      localInput.addEventListener('change',function(){
+        var file=localInput.files[0];if(!file)return;
+        parseBackup(file).then(function(values){
+          if(!confirm('导入会覆盖备份中同名的数据项。是否继续？'))return;
+          return browserStore.importValues(values).then(function(){location.reload();});
+        }).catch(function(error){alert('导入失败：'+error.message);});localInput.value='';
       });
       return;
     }
@@ -289,9 +336,14 @@
     notice.hidden = true;
     notice.style.cssText = "position:fixed;z-index:2147483001;right:18px;bottom:70px;max-width:450px;background:#fff7ed;color:#7c3910;border:1px solid #fdba74;border-radius:14px;padding:16px;font:13px/1.7 system-ui;box-shadow:0 8px 30px #0002";
     notice.innerHTML = '<div id="sharedSaveMessage"></div><button data-save-action="retry">重试保存</button> <button data-save-action="export">导出待保存数据</button> <button data-save-action="load">加载主机数据</button>';
+    if (runtime.mode === 'web') {
+      var loginButton = document.createElement('button');
+      loginButton.dataset.saveAction = 'login'; loginButton.textContent = '在新窗口重新登录'; notice.appendChild(loginButton);
+    }
     document.body.appendChild(notice);
     notice.addEventListener("click", function (event) {
       var action = event.target.getAttribute("data-save-action");
+      if (action === 'login') window.open(runtime.basePath + 'login.html', '_blank', 'noopener');
       if (action === "export") downloadJson(Object.fromEntries(memory), "数字看板待保存数据");
       if (action === "retry") { blocked = null; flushMutations().catch(function () {}); }
       if (action === "load" && confirm("加载主机数据会放弃页面尚未保存的修改。请确认已导出待保存数据。是否继续？")) {
@@ -326,16 +378,62 @@
     });
   }
 
+  function modeLabels() {
+    var pill=document.querySelector('.demo-pill');if(pill)pill.textContent=runtime.mode==='static'?'静态演示':runtime.mode==='web'?'网站数据':'本地数据';
+    var note=document.querySelector('.source-note');if(note)note.textContent=(isSharedMode?'服务端数据库':'仅保存在此浏览器')+' · 按原始记录汇总';
+    if(runtime.mode==='web') {
+      var logout=document.createElement('button');logout.textContent='退出登录';logout.type='button';logout.className='outline';
+      logout.addEventListener('click',function(){flushMutations().then(function(){return requestJson('/api/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});}).then(function(){location.href=runtime.basePath+'login.html';}).catch(function(error){alert('请先处理未保存数据：'+error.message);});});
+      var toolbar=document.querySelector('.topmeta');
+      if(!toolbar)logout.style.cssText='position:fixed;left:18px;bottom:18px;z-index:2147483000;border:1px solid #e1c9bf;border-radius:12px;background:white;color:#87352f;padding:10px 16px;cursor:pointer';
+      (toolbar||document.body).appendChild(logout);
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',modeLabels);else modeLabels();
+
   if (!isSharedMode) {
+    function attachBrowser(target) {
+      Object.defineProperty(target,'localStorage',{configurable:true,value:browserStore});
+      target.__dashboardSharedOwner=window;clients.add(target);
+      target.__flushSharedStorage=function(){return Promise.resolve().then(function(){return browserStore.flush();});};
+      target.__retrySharedStorage=target.__flushSharedStorage;
+      target.__reloadSharedStorage=function(){return browserStore.discard().then(refreshBrowser);};
+      target.__getSharedStorageStatus=function(){return status;};
+      target.addEventListener('focus',refreshBrowser);
+      target.document.addEventListener('visibilitychange',refreshBrowser);
+      target.addEventListener('beforeunload',function(event){if(browserStore.hasPending()){event.preventDefault();event.returnValue='';}});
+    }
+    try {
+      var browserBackend=window.createDashboardBrowserBackend(runtime.basePath);
+      browserStore=window.createDashboardBrowserStorage(browserBackend,runtime.basePath,runtime.seed||{},function(state,message){setStatus(state,message);if(state==='saved')setTimeout(refreshBrowser,0);});
+      attachBrowser(window);
+    } catch(error) {
+      showFatal('浏览器存储不可用：'+error.message);
+      window.__sharedStorageReady=Promise.reject(error);return;
+    }
+    var browserReady=browserStore.ready.then(function(){return {mode:'local'};}).catch(function(error){showFatal('浏览器存储不可用：'+error.message);throw error;});
+    window.__dashboardSharedHub={attach:attachBrowser,ready:browserReady,basePath:runtime.basePath};
+    var browserSeen=browserStore.exportValues();
+    function refreshBrowser() {
+      if(!browserStore || !browserSeen || browserStore.hasPending() || editingOrPending())return;
+      return browserStore.refresh(function(){return !editingOrPending();}).then(function(){
+        if(browserStore.hasPending()||editingOrPending())return;
+        var next=browserStore.exportValues();
+        var changed=Array.from(new Set(Object.keys(browserSeen).concat(Object.keys(next)))).filter(function(key){return browserSeen[key]!==next[key];});
+        browserSeen=next;notifyData(changed);
+      }).catch(function(error){setStatus('error','浏览器读取失败：'+error.message);});
+    }
+    browserStore.subscribe(refreshBrowser);
+    setInterval(refreshBrowser,15000);
     window.__dashboardStorageMode = "local";
-    window.__sharedStorageReady = Promise.resolve({ mode: "local" });
+    window.__sharedStorageReady = browserReady;
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installManager);
     else installManager();
     return;
   }
 
   window.__dashboardStorageMode = "shared";
-  var hub = { attach: attach, ready: null };
+  var hub = { attach: attach, ready: null, basePath: runtime.basePath };
   window.__dashboardSharedHub = hub;
   hub.ready = window.__sharedStorageReady = requestJson("/api/storage").then(function (result) {
     applySnapshot(result, false);

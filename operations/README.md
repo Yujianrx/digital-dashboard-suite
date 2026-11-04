@@ -1,6 +1,8 @@
 # 连锁经营大屏
 
-[![项目检查](https://github.com/zhujiaowo-sudo/chain-operations-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/zhujiaowo-sudo/chain-operations-dashboard/actions/workflows/ci.yml)
+此目录是通用数据看板套件的经营大屏子项目。完整套件的本地、网站及静态部署请查看 [根目录说明](../README.md) 和 [部署指南](../docs/DEPLOYMENT.md)。
+
+[![项目检查](https://github.com/Yujianrx/digital-dashboard-suite/actions/workflows/ci.yml/badge.svg)](https://github.com/Yujianrx/digital-dashboard-suite/actions/workflows/ci.yml)
 ![Vue 3](https://img.shields.io/badge/Vue-3-42b883) ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6) ![Three.js](https://img.shields.io/badge/Three.js-3D-111827) ![SQLite](https://img.shields.io/badge/SQLite-local%20snapshot-0f80cc)
 
 面向连锁门店经营分析的通用数据看板。基于 **Vue 3 + TypeScript + Vite + ECharts + Three.js**，提供三维省市下钻、渠道分析、会员储值及门店业绩前20名滚动榜单，配套 Node.js 只读接口和每日 SQLite 快照。
@@ -25,8 +27,8 @@
 使用 Node.js **22.13+**，推荐 **24 LTS**。项目采用 Node 内置 SQLite。
 
 ```bash
-git clone https://github.com/zhujiaowo-sudo/chain-operations-dashboard.git chain-operations-dashboard
-cd chain-operations-dashboard
+git clone https://github.com/Yujianrx/digital-dashboard-suite.git
+cd digital-dashboard-suite/operations
 npm ci --ignore-scripts
 npm run dev
 ```

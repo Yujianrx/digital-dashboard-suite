@@ -4,7 +4,10 @@ permissions:
   contents: read
 jobs:
   check:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,3 +19,12 @@ jobs:
       - run: npm run test:operations
       - run: npm --prefix operations run type-check
       - run: npm run build
+      - run: npm run build:static
+      - run: npm run test:artifact
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t dashboard-test .
+      - name: Container login and persistence smoke test
+        run: node scripts/test-container.mjs

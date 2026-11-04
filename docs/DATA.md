@@ -2,7 +2,7 @@
 
 ## 主机存储
 
-`server/dashboard-host.ps1` 提供静态页面、`GET /api/storage`、`GET /api/revision` 和带版本检查的 `POST /api/storage`。数据保存在当前项目下，只有全空数据库才读取 `initial-state.json`。首次模板中的活动来源没有任何日期数据。
+`server/host.mjs` 提供跨平台服务；原 Windows `server/dashboard-host.ps1` 保留为兼容入口。新服务提供静态页面、`GET /api/storage`、`GET /api/revision` 和带版本检查的 `POST /api/storage`。数据保存在当前项目下，只有未初始化且无记录的数据库才读取 `initial-state.json`。首次模板中的活动来源没有任何日期数据。
 
 导入数据和新建活动沿用页面入口。备份包含自己的业务信息，仅保存在本机，不应提交到 Git。
 
@@ -31,4 +31,4 @@ npm start
 
 代理默认禁用，不自动启动或探测其他已有服务，只接受显式配置的本机只读接口。每日快照使用自己的配置，接口错误时保留上一次成功快照。
 
-主机服务默认仅允许本机访问，不含公网账号系统。若需要多用户联网部署，请在自己的受控环境中配置认证、访问范围、备份和服务运行方式；不要直接把主机端口暴露到公网。
+本地模式默认仅允许本机访问。网站模式提供单管理员登录，共享一个工作空间；静态模式只保存到当前浏览器。HTTPS、Docker、备份及迁移见 [部署指南](DEPLOYMENT.md)。

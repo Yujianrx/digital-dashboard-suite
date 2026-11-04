@@ -42,9 +42,9 @@
   "description": "通用连锁经营数据大屏：三维地图、会员储值、门店排行与每日本地快照，无内置业务数据。",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zhujiaowo-sudo/chain-operations-dashboard.git"
+    "url": "https://github.com/Yujianrx/digital-dashboard-suite.git"
   },
-  "homepage": "https://github.com/zhujiaowo-sudo/chain-operations-dashboard#readme",
+  "homepage": "https://github.com/Yujianrx/digital-dashboard-suite#readme",
   "keywords": [
     "dashboard",
     "vue3",

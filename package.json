@@ -3,16 +3,37 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "通用数据看板套件：会员运营、活动计划、营业统计和连锁经营大屏；无品牌及真实业务数据。",
-  "engines": {"node": ">=22.13"},
+  "description": "支持本地、服务器与静态部署的数据看板套件，涵盖会员运营、活动计划、营业统计与经营大屏，默认空数据，数据自主保存。",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "seed:template": "node scripts/create-initial-state.mjs",
-    "start": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File server/dashboard-host.ps1 -LoopbackOnly",
+    "start": "node server/host.mjs",
     "build": "node scripts/build-operations.mjs",
     "setup:operations": "npm --prefix operations ci --ignore-scripts",
     "test": "node --test tests/*.test.mjs",
     "test:operations": "npm --prefix operations test",
-    "check:public": "node scripts/check-public.mjs"
+    "check:public": "node scripts/check-public.mjs",
+    "start:web": "node --env-file=.env server/start-web.mjs",
+    "start:legacy": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File server/dashboard-host.ps1 -LoopbackOnly",
+    "build:static": "node scripts/build-static.mjs",
+    "test:artifact": "node --test tests/artifacts/static.test.mjs"
   },
-  "repository": {"type":"git","url":"https://github.com/zhujiaowo-sudo/-.git"}
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yujianrx/digital-dashboard-suite.git"
+  },
+  "homepage": "https://github.com/Yujianrx/digital-dashboard-suite#readme",
+  "keywords": [
+    "dashboard",
+    "data-visualization",
+    "self-hosted",
+    "vue3",
+    "typescript",
+    "nodejs",
+    "sqlite",
+    "docker",
+    "github-pages"
+  ]
 }

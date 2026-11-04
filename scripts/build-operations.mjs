@@ -1,9 +1,14 @@
-import {cp,access} from 'node:fs/promises';
+import {cp,access,readFile,writeFile,rm} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const cwd=fileURLToPath(new URL('../operations/',import.meta.url));
 await access(new URL('../operations/node_modules/vite/bin/vite.js',import.meta.url)).catch(()=>{throw Error('请先运行 npm run setup:operations')});
-const result=spawnSync(process.execPath,['node_modules/vite/bin/vite.js','build','--mode','local-board','--base','/operations/'],{cwd,stdio:'inherit'});
+const result=spawnSync(process.execPath,['node_modules/vite/bin/vite.js','build','--mode','local-board','--base','./'],{cwd,stdio:'inherit'});
 if(result.status!==0)process.exit(result.status||1);
-await cp(new URL('../operations/dist/',import.meta.url),new URL('../app/offline-package/operations/',import.meta.url),{recursive:true});
-console.log('Built operations screen into the local suite. Build output is ignored by Git.');
+const target=new URL('../app/offline-package/operations/',import.meta.url);
+await rm(target,{recursive:true,force:true});
+await cp(new URL('../operations/dist/',import.meta.url),target,{recursive:true});
+const index=new URL('index.html',target);
+const html=await readFile(index,'utf8');
+await writeFile(index,html.replace('</head>','<script src="../runtime-config.js"></script><script src="../browser-storage.js"></script><script src="../shared-storage-client.js"></script></head>'));
+console.log('Built operations screen with deployment-relative assets.');

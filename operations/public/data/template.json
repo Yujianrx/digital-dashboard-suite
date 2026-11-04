@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "mode": "demo",
+    "source": "空数据模板",
+    "title": "连锁经营大屏",
+    "revenueLabel": "总营收",
+    "revenueDefinition": "尚未接入业务数据；所有业务数组为空。金额字段接入后以分为单位。",
+    "timezone": "Asia/Shanghai",
+    "generatedAt": "",
+    "coverage": {
+      "start": "2026-01-01",
+      "end": "2026-12-31"
+    },
+    "warnings": [
+      "当前为无业务数据的项目模板，请配置自有数据源。"
+    ],
+    "freshness": "尚未接入数据"
+  },
+  "stores": [],
+  "facts": [],
+  "overviewFacts": [],
+  "targets": [],
+  "capacity": [],
+  "activities": [],
+  "members": [],
+  "dishes": []
+}

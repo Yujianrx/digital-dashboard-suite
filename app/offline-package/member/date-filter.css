@@ -1,0 +1,22 @@
+.filterbar.date-filters{display:block;padding:16px 18px}
+.date-filters [hidden]{display:none!important}
+.date-filter-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-width:0}
+.date-quick-row+.date-filter-row{border-top:1px solid #edf1f6;padding-top:14px;margin-top:14px}
+.date-filter-title{font-size:12px;color:#667f9e;font-weight:600;min-width:50px}
+.date-filters .period-switch button[data-period=range]{width:64px}
+.date-filters .date-label{gap:8px;white-space:nowrap}
+.date-range-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px;color:#8797ad}
+.date-filters input[type=date]{width:145px;max-width:160px;min-width:0;height:35px}
+.date-filters .range-label{margin-left:auto;color:#4d6c92;font-size:12px}
+.date-quick-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.date-quick-row button{background:#f6f8fc;border:1px solid #e4ebf4;border-radius:7px;padding:7px 13px;color:#657e9e;font-size:12px;line-height:1.3}
+.date-quick-row button:hover{background:#edf5ff;border-color:#bfd6f7;color:#1264ca}
+.date-quick-row button.active{background:#eaf3ff;color:#1264ca;border-color:#8bb6f1;font-weight:600}
+.comparison-select{border:1px solid #dfe6ef;background:#fff;border-radius:6px;height:35px;padding:6px 28px 6px 10px;color:#244465;font-size:13px}
+.date-filters .resetdate{margin-left:auto;font-size:12px}
+.date-filter-note{font-size:11px;color:#92a2b7;line-height:1.8;margin-top:12px}
+.date-filter-error{color:#c44b52;background:#fff3f3;border-radius:7px;padding:8px 12px;font-size:12px;margin-top:10px;line-height:1.6}
+.comparison-line #comparisonLabel{color:#778dab}
+.comparison-dates{display:block;margin-top:5px;font-size:10px;color:#93a1b5;font-weight:400;white-space:nowrap}
+@media(max-width:1180px){.date-filters .range-label{flex:1 1 240px;margin-left:0}.date-filters .resetdate{align-self:center}.date-filters .date-filter-row{gap:12px}}
+@media(max-width:720px){.filterbar.date-filters{padding:14px}.date-filter-row{gap:10px}.date-filter-title{width:100%;font-size:11px}.date-filters .period-switch{width:auto}.date-filters .date-label{font-size:11px}.date-filters .range-label{flex-basis:100%;line-height:1.7}.date-quick-row{gap:6px;margin-top:10px}.date-quick-row button{padding:7px 10px;font-size:11px}.date-range-controls{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:9px}.date-range-controls>span{display:none}.date-range-controls label{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0}.date-filters .date-range-controls input[type=date]{width:100%;max-width:none;padding:6px;font-size:12px}.date-filters .resetdate{margin-left:0}.date-filter-note{font-size:10px}.date-filter-error{font-size:11px}.comparison-dates{white-space:normal}.comparison-line{margin-bottom:18px}}

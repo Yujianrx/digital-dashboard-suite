@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#9edcff" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>会员运营活动效果数据看板</title>
+    <link rel="stylesheet" href="./styles.css?v=20260911.10" />
+      <script src="../shared-storage-client.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <button class="brand-logo-control" id="logoButton" type="button" aria-label="上传品牌 LOGO" title="点击上传 LOGO">
+            <span class="brand-logo-placeholder" id="brandLogoPlaceholder"><b>＋</b>LOGO</span>
+            <img id="brandLogoImage" alt="品牌 LOGO" hidden />
+          </button>
+          <div class="brand-copy">
+            <strong>会员运营活动效果数据看板</strong>
+            <span>洞察每一次变化</span>
+          </div>
+        </div>
+
+        <nav class="primary-nav" aria-label="主导航">
+          <button class="nav-item active" type="button" data-view="home">
+            <span class="nav-symbol">⌂</span><span>首页总览</span>
+          </button>
+        </nav>
+
+        <div class="side-section">
+          <div class="side-heading">
+            <span>我的活动</span>
+            <button class="icon-button" id="quickAddActivity" type="button" aria-label="新建活动">＋</button>
+          </div>
+          <div class="activity-nav" id="activityNav"></div>
+          <div class="side-empty" id="activityNavEmpty" hidden>还没有活动，先新建一个吧。</div>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="storage-note">
+            <span class="status-dot"></span>
+            <div><strong>保存于局域网主机</strong><small>V10 · 输入自动保存，其他用户自动同步</small></div>
+          </div>
+          <div class="backup-actions">
+            <button class="text-button" type="button" id="importButton">导入数据</button>
+            <button class="text-button" type="button" id="exportJsonButton">备份 JSON</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <button class="mobile-menu" id="mobileMenu" type="button" aria-label="打开菜单">☰</button>
+          <div class="breadcrumb" id="breadcrumb">首页 / 数据总览</div>
+          <div class="save-indicator"><span class="status-dot"></span><span id="saveStatus">已保存</span></div>
+        </header>
+
+        <section class="view page-view" id="homeView">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">DATA, IN SIGHT</p>
+              <h1>当月活动效果，一目了然</h1>
+              <p class="page-description">查看当月成果，对照上月日均，找到需要进一步核查的变化环节。</p>
+            </div>
+            <button class="primary-button" type="button" id="newActivityButton">＋ 新建活动</button>
+          </div>
+
+          <div class="month-overview">
+            <div class="section-title-row">
+              <div><p class="section-kicker">MONTHLY SNAPSHOT</p><h2><span id="homeMonthLabel"></span> 总览</h2></div>
+              <div class="month-nav compact">
+                <button type="button" id="homePrevMonth" aria-label="上一个月">‹</button>
+                <input type="month" id="homeMonthPicker" aria-label="总览月份" />
+                <button type="button" id="homeNextMonth" aria-label="下一个月">›</button>
+              </div>
+            </div>
+            <div class="overview-grid" id="overviewCards"></div>
+            <div class="mode-totals" id="modeTotals"></div>
+          </div>
+
+          <section class="panel comparison-panel">
+            <div class="section-title-row analysis-title-row">
+              <div><p class="section-kicker">MONTHLY COMPARISON</p><h2>本月活动表现</h2></div>
+              <div class="analysis-controls">
+                <label>比较范围<select id="homeCompareMode"><option value="same">上月同期</option><option value="full">上月整月</option></select></label>
+                <label>排序<select id="activityRanking"><option value="decline">下降优先</option><option value="growth">增长优先</option><option value="name">活动名称</option></select></label>
+              </div>
+            </div>
+            <p class="comparison-range" id="homeComparisonRange"></p>
+            <p class="analysis-summary" id="homeAnalysisSummary"></p>
+            <div class="comparison-scroll"><table class="comparison-table">
+              <thead><tr><th>活动 / 主指标</th><th>本月累计</th><th>本月日均</th><th>上月日均</th><th>日均环比</th><th>有效天数 / 区间天数<br>本月 · 上月</th></tr></thead>
+              <tbody id="comparisonRows"></tbody>
+            </table></div>
+            <p class="analysis-empty" id="comparisonEmpty" hidden>本月暂无活动指标数据。仅有历史月份数据的活动不会计入本月。</p>
+            <p class="analysis-footnote">业绩活动仅按销量 > 0 的日期计算日均和同期对比；零销量日期从指标合计、分母和比较趋势中一并剔除，销量空白不参与。转化率活动按各指标已录入天数计算。原始记录和本月累计保留。业绩活动按实收、转化率活动按券消费金额排序，环比均比较同一个活动。</p>
+          </section>
+
+          <div class="home-grid">
+            <section class="panel activity-panel">
+              <div class="section-title-row">
+                <div><p class="section-kicker">ACTIVITIES</p><h2>活动快捷入口</h2></div>
+                <span class="muted-label" id="activityCountLabel"></span>
+              </div>
+              <div class="activity-cards" id="activityCards"></div>
+              <div class="empty-state" id="activityCardsEmpty" hidden>
+                <div class="empty-icon">＋</div>
+                <h3>本月暂无活动数据</h3>
+                <p>切换其他月份查看历史活动，或新建活动后录入本月数据。</p>
+                <button class="secondary-button" type="button" id="emptyNewActivity">新建活动</button>
+              </div>
+            </section>
+
+            <section class="panel todo-panel">
+              <div class="section-title-row">
+                <div><p class="section-kicker">TO-DO</p><h2>待办任务</h2></div>
+                <button class="small-button" id="newTodoButton" type="button">＋ 添加</button>
+              </div>
+              <div class="todo-list" id="todoList"></div>
+              <div class="empty-state small" id="todoEmpty" hidden>
+                <p>暂无待办，今天很清爽。</p>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel export-panel" id="tableExportModule">
+            <div class="export-intro">
+              <p class="section-kicker">TABLE EXPORT</p>
+              <h2>表格导出</h2>
+              <p>按活动和月份筛选后导出每日数据长表，自动包含活动模式、全部指标与备注列。</p>
+            </div>
+            <div class="export-controls">
+              <label>活动范围
+                <select id="exportActivitySelect" aria-label="导出活动范围"></select>
+              </label>
+              <label>数据月份
+                <select id="exportMonthSelect" aria-label="导出数据月份"></select>
+              </label>
+              <label>文件格式
+                <select id="exportFormatSelect" aria-label="导出文件格式">
+                  <option value="xlsx">Excel（.xlsx）</option>
+                  <option value="csv">CSV（.csv）</option>
+                </select>
+              </label>
+              <button class="primary-button export-submit" type="button" id="exportTableButton">导出表格</button>
+            </div>
+            <div class="export-preview">
+              <span class="export-preview-mark">⇩</span>
+              <div><strong id="exportPreviewTitle">准备导出</strong><small id="exportPreviewDetail">请选择导出范围</small></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="view page-view" id="activityView" hidden>
+          <div class="activity-heading">
+            <div>
+              <div class="activity-badges"><span class="mode-badge" id="activityModeBadge"></span><span class="auto-save-badge">自动保存</span></div>
+              <h1 id="activityTitle"></h1>
+              <p class="page-description" id="activitySubtitle"></p>
+            </div>
+            <div class="activity-actions">
+              <button class="secondary-button" type="button" id="renameActivity">改名</button>
+              <button class="danger-button" type="button" id="deleteActivity">删除</button>
+            </div>
+          </div>
+
+          <div class="activity-toolbar panel">
+            <div class="month-nav">
+              <button type="button" id="prevMonth" aria-label="上一个月">‹</button>
+              <input type="month" id="monthPicker" aria-label="活动月份" />
+              <button type="button" id="nextMonth" aria-label="下一个月">›</button>
+            </div>
+            <div class="toolbar-meta"><span id="daysLabel"></span><span class="divider"></span><span id="completenessLabel"></span></div>
+            <div class="toolbar-actions">
+              <button class="secondary-button" type="button" id="activityImportButton">导入合并</button>
+              <button class="secondary-button" type="button" id="exportExcelButton">导出 Excel</button>
+            </div>
+          </div>
+
+          <div class="detail-comparison-bar">
+            <div><p class="comparison-range" id="activityComparisonRange"></p><p class="analysis-footnote" id="activityComparisonRule"></p></div>
+            <label class="comparison-select">比较范围<select id="activityCompareMode"><option value="same">上月同期</option><option value="full">上月整月</option></select></label>
+          </div>
+          <div class="metric-summary" id="metricSummary"></div>
+          <p class="chart-comparison-key">实线：本月　虚线：上月（业绩活动均剔除零销量日期）　竖线：运营事件（本月金色 / 上月紫色）；悬停数据点查看详情。</p>
+
+          <div class="charts-grid">
+            <section class="panel chart-card">
+              <div class="chart-card-heading"><div><p class="section-kicker">DAILY TREND</p><h2 id="chartOneTitle"></h2></div><div class="chart-legend" id="chartOneLegend"></div></div>
+              <div class="chart-wrap"><canvas id="chartOne"></canvas><div class="chart-empty" id="chartOneEmpty" hidden>录入数据后，这里会显示整月趋势</div></div>
+            </section>
+            <section class="panel chart-card">
+              <div class="chart-card-heading"><div><p class="section-kicker">DAILY TREND</p><h2 id="chartTwoTitle"></h2></div><div class="chart-legend" id="chartTwoLegend"></div></div>
+              <div class="chart-wrap"><canvas id="chartTwo"></canvas><div class="chart-empty" id="chartTwoEmpty" hidden>录入数据后，这里会显示整月趋势</div></div>
+            </section>
+          </div>
+
+          <section class="panel insights-panel">
+            <div class="section-title-row"><div><p class="section-kicker">WHAT CHANGED</p><h2>变化环节与核查提示</h2></div></div>
+            <div class="insights-grid" id="activityInsights"></div>
+            <p class="analysis-footnote">提示用于定位指标变化，实际原因需结合下方运营事件、活动规则及门店执行记录核实。</p>
+          </section>
+          <section class="panel data-panel">
+            <div class="section-title-row data-title-row">
+              <div><p class="section-kicker">DAILY INPUT</p><h2>每日数据录入</h2><p class="table-hint">输入后自动保存至主机；请确认右上角显示“已保存到主机”。空白表示未录入。业绩活动中，销量为 0 的日期保留原始记录，但不参与日均和同期比较。</p></div>
+              <span class="keyboard-tip">Tab 键快速切换</span>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead id="dataTableHead"></thead>
+                <tbody id="dataTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel events-panel">
+            <div class="section-title-row"><div><p class="section-kicker">OPERATION NOTES</p><h2>运营事件标记</h2></div></div>
+            <p class="analysis-footnote">记录优惠调整、投放变化或门店执行情况，与趋势对照。本月和上月标记显示在下方；标记不会增加活动统计天数。</p>
+            <form id="eventForm" class="event-form">
+              <label>日期<input id="eventDate" type="date" required /></label>
+              <label>类型<select id="eventKind"><option>活动规则</option><option>投放变化</option><option>门店执行</option><option>价格优惠</option><option>节假日 / 天气</option><option>其他</option></select></label>
+              <label class="event-note-label">具体情况<input id="eventNote" type="text" maxlength="200" placeholder="例如：9 月 5 日起暂停社群推送" required /></label>
+              <div class="event-form-actions"><button id="eventSubmit" class="primary-button" type="submit">添加标记</button><button id="eventCancel" class="text-button" type="button">取消编辑</button></div>
+            </form>
+            <div id="eventList" class="event-list"></div><p id="eventEmpty" class="analysis-empty">本月和上月暂无运营事件标记。</p>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="activityModal" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
+        <button class="modal-close" type="button" data-close-modal="activityModal" aria-label="关闭">×</button>
+        <p class="section-kicker">NEW ACTIVITY</p>
+        <h2 id="activityModalTitle">新建活动</h2>
+        <form id="activityForm">
+          <label>活动名称<input id="activityNameInput" type="text" maxlength="40" placeholder="例如：9月周年庆储值活动" required /></label>
+          <fieldset>
+            <legend>活动模式</legend>
+            <label class="mode-option"><input type="radio" name="activityMode" value="performance" checked /><span><strong>业绩活动</strong><small>销量、营业额、实收</small></span></label>
+            <label class="mode-option"><input type="radio" name="activityMode" value="conversion" /><span><strong>转化率活动</strong><small>领券、核销、消费金额、参与人数</small></span></label>
+          </fieldset>
+          <button class="primary-button full" type="submit">创建并开始录入</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="todoModal" hidden>
+      <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="todoModalTitle">
+        <button class="modal-close" type="button" data-close-modal="todoModal" aria-label="关闭">×</button>
+        <p class="section-kicker" id="todoModalKicker">NEW TO-DO</p>
+        <h2 id="todoModalTitle">添加待办任务</h2>
+        <form id="todoForm">
+          <div class="form-grid">
+            <label>日期<input id="todoDate" type="date" required /></label>
+            <label>主题<input id="todoSubject" type="text" maxlength="30" placeholder="例如：门店物料" required /></label>
+            <label>负责人<input id="todoOwner" type="text" maxlength="20" placeholder="姓名" required /></label>
+          </div>
+          <label>事项内容<textarea id="todoContent" rows="3" maxlength="120" placeholder="填写具体事项与交付标准" required></textarea></label>
+          <button class="primary-button full" id="todoSubmitButton" type="submit">添加待办</button>
+        </form>
+      </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json,.csv,.xlsx,.xls" hidden />
+    <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden />
+    <div class="toast" id="toast" hidden></div>
+
+    <script src="./month-analysis.js?v=20260911.10"></script>
+    <script src="./vendor/chart.umd.js"></script>
+    <script src="./vendor/xlsx.full.min.js"></script>
+    <script>window.__sharedStorageReady.then(function(){var script=document.createElement("script");script.src="./app.js?v=20260911.10";document.body.appendChild(script);});</script>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "name": "chain-operations-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:ui": "vite",
+    "dev:api": "node server/index.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "inspect:db": "node scripts/inspect-db.mjs",
+    "sync:data": "node scripts/sync-data.mjs",
+    "build:local-board": "vite build --mode local-board --base /operations/",
+    "check:public": "node scripts/check-public-template.mjs"
+  },
+  "dependencies": {
+    "@vueuse/core": "^14.3.0",
+    "d3-geo": "3.1.1",
+    "echarts": "^6.1.0",
+    "lodash-es": "^4.18.1",
+    "three": "0.186.1",
+    "vue": "^3.5.35",
+    "vue-echarts": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/d3-geo": "3.1.1",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^25.9.2",
+    "@types/three": "0.186.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "sass": "^1.100.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.16",
+    "vue-tsc": "^3.3.3"
+  },
+  "description": "通用连锁经营数据大屏：三维地图、会员储值、门店排行与每日本地快照，无内置业务数据。",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhujiaowo-sudo/chain-operations-dashboard.git"
+  },
+  "homepage": "https://github.com/zhujiaowo-sudo/chain-operations-dashboard#readme",
+  "keywords": [
+    "dashboard",
+    "vue3",
+    "typescript",
+    "echarts",
+    "threejs",
+    "clickhouse",
+    "sqlite",
+    "data-visualization"
+  ]
+}

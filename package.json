@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "支持本地、服务器与静态部署的数据看板套件，涵盖会员运营、活动计划、营业统计与经营大屏，默认空数据，数据自主保存。",
+  "description": "多平台会员运营数据看板，集中管理小程序、视频号、小红书、抖音视频与公众号的运营指标和活动数据，支持会员储值、活动排期与效果复盘，可本地、网站或纯静态部署。",
   "engines": {
     "node": ">=22.13"
   },
@@ -26,6 +26,16 @@
   },
   "homepage": "https://github.com/Yujianrx/digital-dashboard-suite#readme",
   "keywords": [
+    "multi-platform",
+    "member-operations",
+    "membership-analytics",
+    "marketing-analytics",
+    "campaign-management",
+    "wechat-mini-program",
+    "wechat-channels",
+    "xiaohongshu",
+    "douyin",
+    "wechat-official-account",
     "dashboard",
     "data-visualization",
     "self-hosted",

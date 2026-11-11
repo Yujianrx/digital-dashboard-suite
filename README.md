@@ -6,13 +6,15 @@
 
 支持 **本地部署、完整网站、纯静态演示**，数据由自己保存。适合需要集中整理多平台报表、跟进活动和复盘效果的运营人员。
 
-[功能与平台](#支持的平台与指标) · [界面预览](#界面预览) · [快速启动](#本地启动) · [部署指南](docs/DEPLOYMENT.md) · [数据口径](docs/DATA.md)
+[在线演示](https://yujianrx.github.io/digital-dashboard-suite/) · [功能与平台](#支持的平台与指标) · [界面预览](#界面预览) · [快速启动](#本地启动) · [部署指南](docs/DEPLOYMENT.md) · [数据口径](docs/DATA.md)
 
 ![多平台工作台：小程序、视频号、小红书、抖音视频和公众号，使用虚构演示数据](docs/screenshots/platform-workspace.png)
 
 *五个平台，一处进入；各卡片展示本平台主指标，分别查看每日数据与活动效果。图中全部数值均为虚构演示数据。*
 
 **发布版本不含品牌资料或真实业务记录。** 首次启动为空数据，预置的“小程序营业数据”和“会员储值”只是空的数据来源。生产同步、备份和连接凭据不随仓库发布。
+
+在线静态演示：<https://yujianrx.github.io/digital-dashboard-suite/>。页面只用空的演示模板，没有真实经营数字；你在网页里录入的内容只留在当前浏览器。如果打不开，请到 GitHub 打开 **Settings → Pages → Source**，选择 **GitHub Actions**。选好之后，推送到 `main` 会自动发布。
 
 ## 支持的平台与指标
 
@@ -85,7 +87,7 @@ npm start
 
 完整网站：复制 `.env.example` 为 `.env`，填写自己的管理员密码和访问域名。构建后运行 `npm run start:web`，或使用 `docker compose up -d --build`。Docker 使用持久化卷，配合 HTTPS 反向代理访问。
 
-静态版本：运行 `npm run build:static`，上传 **`dist/static/` 中的内容**。支持站点根路径和项目子目录，不包含服务端、数据库或凭据。GitHub Pages 可使用手动触发的发布工作流。
+静态版本：运行 `npm run build:static`，上传 **`dist/static/` 中的内容**。支持站点根路径和项目子目录，不包含服务端、数据库或凭据。GitHub Pages 发布同一份空演示模板：推送到 `main` 会自动构建，也可以在 Actions 里手动运行 **Publish static demo**。演示地址是 <https://yujianrx.github.io/digital-dashboard-suite/>。
 
 详细步骤、环境变量、备份与迁移见 [部署指南](docs/DEPLOYMENT.md)。
 
@@ -135,3 +137,9 @@ npm run test:artifact
 ```
 
 CI 覆盖 Windows、Linux、macOS，并独立检查 Docker 登录、保存和重启恢复。发布范围见 [隐私说明](docs/PRIVACY.md)，组件许可见 [第三方说明](docs/THIRD-PARTY.md)。
+
+## 许可证
+
+本仓库代码使用 [MIT 许可证](LICENSE)，版权所有 © 2026 Yujianrx。
+
+经营大屏改自 [IofTV-Screen-Vue3](https://github.com/daidaibg/IofTV-Screen-Vue3)。上游同样是 MIT 许可证，版权所有 © 2022 daidai，原文保留在 [operations/LICENSE](operations/LICENSE)。其他第三方组件仍按它们自己的许可使用。

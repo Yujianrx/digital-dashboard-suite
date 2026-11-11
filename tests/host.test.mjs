@@ -7,19 +7,21 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import net from 'node:net';
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-test('isolated Windows host initializes empty data, saves with revision checking and survives restart',{skip:process.platform!=='win32',timeout:90000},async()=>{
+function withTimeout(promise,ms){let timer;const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('timeout')),ms)});return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer))}
+test('isolated Windows host initializes empty data, saves with revision checking and survives restart',{skip:process.platform!=='win32',timeout:180000},async()=>{
  const prefix=join(tmpdir(),'dashboard-public-test-'),directory=await mkdtemp(prefix);
  assert(resolve(directory).startsWith(resolve(prefix))&&resolve(directory).length>resolve(prefix).length);
  let child=null,output='';
  const port=await new Promise(resolvePort=>{const socket=net.createServer().listen(0,'127.0.0.1',()=>{const p=socket.address().port;socket.close(()=>resolvePort(p))})});
  const base='http://127.0.0.1:'+port;
- const stop=async()=>{if(!child)return;const process=child;child=null;if(process.exitCode===null){const closed=once(process,'exit');process.kill();await closed}};
+ const stop=async()=>{if(!child)return;const process=child;child=null;if(process.exitCode!==null)return;const closed=once(process,'exit');if(process.exitCode!==null)return;process.kill();await withTimeout(closed,5000).catch(()=>{})};
  const start=async()=>{
   child=spawn('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',join(directory,'server/dashboard-host.ps1'),'-Port',String(port),'-LoopbackOnly'],{cwd:directory,windowsHide:true,env:{...process.env,DASHBOARD_OPERATIONS_API:''},stdio:['ignore','pipe','pipe']});
   child.stdout.on('data',s=>output+=s);child.stderr.on('data',s=>output+=s);
   // Hosted Windows runners may cold-start PowerShell and compile Add-Type slowly.
-  const deadline=Date.now()+30000;
-  while(Date.now()<deadline){if(child.exitCode!==null)throw Error('Host exited: '+output);try{const r=await fetch(base+'/api/storage',{signal:AbortSignal.timeout(1000)});if(r.ok)return await r.json()}catch{}await wait(150)}
+  // A single fetch must not block the whole test if the connection never settles.
+  const deadline=Date.now()+45000;
+  while(Date.now()<deadline){if(child.exitCode!==null)throw Error('Host exited: '+output);try{const r=await withTimeout(fetch(base+'/api/storage',{signal:AbortSignal.timeout(1000)}),2000);if(r.ok)return await r.json()}catch{}await wait(150)}
   throw Error('Host startup timed out: '+output);
  };
  try{

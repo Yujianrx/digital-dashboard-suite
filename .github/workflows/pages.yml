@@ -1,13 +1,17 @@
+# 发布静态演示。只用仓库里的空演示模板，不读取 data/、backups/ 或 .env。
+# 网站要能打开，仓库设置里的 Pages 来源必须是 GitHub Actions。
 name: Publish static demo
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
 permissions:
   contents: read
   pages: write
   id-token: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,9 +23,11 @@ jobs:
       - run: npm run setup:operations
       - run: npm test
       - run: npm run build:static
-      - uses: actions/upload-pages-artifact@v3
+      - run: npm run test:artifact
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist/static
+          include-hidden-files: true
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -29,5 +35,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment

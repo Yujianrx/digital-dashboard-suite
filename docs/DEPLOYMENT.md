@@ -54,7 +54,17 @@ npm run test:artifact
 
 ### GitHub Pages
 
-在 Settings → Pages 选择 GitHub Actions，然后手动运行 **Publish static demo** 工作流。流程检查代码、生成并发布静态包。项目地址通常为 `https://账户名.github.io/digital-dashboard-suite/`，仓库改名会改变此路径。本次代码配置不会自动开启 Pages 或发布演示。
+在线演示：<https://yujianrx.github.io/digital-dashboard-suite/>
+
+发布内容就是上面的静态包，只用仓库里的空演示模板。`data/`、`backups/` 和 `.env` 不会被放进网站。
+
+仓库主人需要在 GitHub 网页上打开一次来源开关，代码本身改不了这一项：
+
+1. 打开本仓库 **Settings → Pages**。
+2. **Source** 选择 **GitHub Actions**。
+3. 到 **Actions**，打开 **Publish static demo**，点击 **Run workflow**。之后每次推送到 `main` 也会自动构建并发布。
+
+还没选择 GitHub Actions 时，这个地址打不开，工作流的发布步骤也会失败。选好之后重新运行一次 **Publish static demo** 即可。
 
 ## 备份与迁移
 

@@ -83,4 +83,4 @@ npm run sync:data         # 显式同步自己的数据源
 
 地理资源和业务数据相互独立。候选边界资源只用于明确标识的开发预览；正式构建保留来源、授权、审图及完整性校验，未验收时使用业务网络视图。详情见 [地图资源说明](docs/MAPS.md)。
 
-本项目基于 [IofTV-Screen-Vue3](https://github.com/daidaibg/IofTV-Screen-Vue3) 改造，上游 MIT 许可见 [LICENSE](LICENSE)。3D 实现使用 Three.js、d3-geo，并参考相关开源项目，第三方许可见 [third_party](third_party/NOTICE.md)。地图资源的独立使用条件不由代码许可证替代。
+本项目基于 [IofTV-Screen-Vue3](https://github.com/daidaibg/IofTV-Screen-Vue3) 改造，上游 MIT 许可见 [LICENSE](LICENSE)（Copyright 2022 daidai），原文保留在该文件。套件其余代码的 MIT 许可见仓库根目录 [LICENSE](../LICENSE)（Copyright 2026 Yujianrx）。3D 实现使用 Three.js、d3-geo，并参考相关开源项目，第三方许可见 [third_party](third_party/NOTICE.md)。地图资源的独立使用条件不由代码许可证替代。
